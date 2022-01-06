@@ -1,0 +1,8 @@
+apiVersion: etcd.shimo.im/v1alpha1
+kind: EtcdCluster
+metadata:
+  name: etcd-cluster
+spec:
+  # Add fields here
+  size: 3 # 基数副本数
+  image: haozi4263/etcd:v3.4.13

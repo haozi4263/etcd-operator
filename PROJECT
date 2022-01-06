@@ -1,0 +1,10 @@
+domain: shimo.im
+repo: github.com/haozi4263/etcd-operator
+resources:
+- group: etcd
+  kind: EtcdCluster
+  version: v1alpha1
+- group: etcd
+  kind: EtcdBackup
+  version: v1alpha1
+version: "2"

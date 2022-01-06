@@ -1,0 +1,14 @@
+apiVersion: etcd.shimo.im/v1alpha1
+kind: EtcdBackup
+metadata:
+  name: etcd-backup
+spec:
+  # Add fields here
+  etcdUrl: http://etcd-cluster-0.etcd-cluster.default.svc.cluster.local:2379 # 备份节点到etcd地址
+  storageType: s3 # 指定备份类型
+  s3:
+    path: ""  # 数据存放目录
+    s3Secret: ""  # 包含secretID secretKey
+  oss:
+    path: ""  # 数据存放目录
+    ossSecret: ""  # 包含secretID secretKey

@@ -1,0 +1,28 @@
+1. kubebuilder init --domain shimo.im --owner jude --repo github.com/haozi4263/etcd-operator
+
+2. kubebuilder create api --group etcd --version v1alpha1 --kind EtcdCluster
+
+3. make 重新生成资源清单
+4. makr install 安装crd集群中
+5. make run 运行contorller
+
+make docker-build IMG=haozi4263/etcd-operator-cluster:v1
+make docker-push IMG=haozi4263/etcd-operator-cluster:v1
+
+backup:
+    kubebuilder create api --group etcd --version v1alpha1 --kind EtcdBackup
+    but was required as: github.com/coreos/bbolt: etcd和grpc版本不匹配
+        go mod edit -replace github.com/coreos/bbolt@v1.3.4=go.etcd.io/bbolt@v1.3.4
+        go mod edit -replace google.golang.org/grpc@v1.29.1=google.golang.org/grpc@v1.26.0
+
+        go mod edit -replace github.com/coreos/bbolt@v1.3.4=go.etcd.io/bbolt@v1.3.4
+
+    make docker-build IMG=haozi4263/etcd-operator-backup:v1
+    make docker-push IMG=haozi4263/etcd-operator-backup:v1
+    docker build --target backup -t etcd-operator-backup:v0.0.1 .
+
+
+
+
+
+
