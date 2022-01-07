@@ -21,7 +21,7 @@ func News3Uploader(Endpoint, AK, SK string) *s3Uploader {
 	}
 }
 
-func (s *s3Uploader) InitClinet() (*minio.Client, error) {
+func (s *s3Uploader) InitClient() (*minio.Client, error) {
 	return minio.New(s.Endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(s.AccessKeyId, s.SecretAccessKey, ""),
 		Secure: true,
@@ -29,7 +29,7 @@ func (s *s3Uploader) InitClinet() (*minio.Client, error) {
 }
 
 func (s *s3Uploader) Uploader(ctx context.Context, filePath string) (int64, error) {
-	minioClient, err := s.InitClinet()
+	minioClient, err := s.InitClient()
 	if err != nil {
 		return 0, err
 	}
