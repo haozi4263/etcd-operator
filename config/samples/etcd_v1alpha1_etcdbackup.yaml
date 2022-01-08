@@ -9,7 +9,7 @@ spec:
   s3:
     path: "etcdbackup/etcd-snapshot.db"  # 数据存放目录 格式：<bucket>/<object path>
     secret: "minio-access-secret"  # 包含secretID secretKey
-    endpoint: "https://play.min.io:9443"
+    endpoint: "play.min.io"
   oss:
     path: "etcdbackup/etcd-snapshot.db"  # 数据存放目录 格式：<bucket>/<object path>
     secret: ""  # 包含secretID secretKey

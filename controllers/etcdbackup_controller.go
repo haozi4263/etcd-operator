@@ -156,8 +156,8 @@ func podForBackup(backup *etcdv1alpha1.EtcdBackup, image string) *corev1.Pod {
 					},
 					Env: []corev1.EnvVar{
 						{
-							Name:  backupEndpoint,
-							Value: backup.Spec.S3.Endpoint,
+							Name:  "ENDPOINT",
+							Value: backupEndpoint,
 						},
 					},
 					EnvFrom: []corev1.EnvFromSource{ // 从configmap或secret获取env

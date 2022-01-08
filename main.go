@@ -34,7 +34,7 @@ import (
 var (
 	scheme             = runtime.NewScheme()
 	setupLog           = ctrl.Log.WithName("setup")
-	defaultBackupImage = "haozi4263/etcd-operator-backup:v0.0.6"
+	defaultBackupImage = "haozi4263/etcd-operator-backup:v0.0.9"
 )
 
 func init() {

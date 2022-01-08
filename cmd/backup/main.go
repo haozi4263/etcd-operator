@@ -81,7 +81,7 @@ func main() {
 
 }
 
-func handleS3(ctx context.Context, bucketName, obejectName, localPath string) (int64, error) {
+func handleS3(ctx context.Context, bucketName, objectName, localPath string) (int64, error) {
 	// 数据保存本地成功，上传到对象存储minio/oss中
 	// todo ,根据传递进来的参数判断初始化s3还是oss
 	endpoint := os.Getenv("ENDPOINT")
@@ -92,5 +92,5 @@ func handleS3(ctx context.Context, bucketName, obejectName, localPath string) (i
 	//secretAccessKey := "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
 	s3Uploader := file.News3Uploader(endpoint, accessKeyID, secretAccessKey)
 
-	return s3Uploader.Uploader(ctx, bucketName, obejectName, localPath)
+	return s3Uploader.Uploader(ctx, bucketName, objectName, localPath)
 }
