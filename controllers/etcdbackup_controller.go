@@ -19,10 +19,13 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"html/template"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"strings"
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -37,6 +40,7 @@ type EtcdBackupReconciler struct {
 	client.Client
 	Log         logr.Logger
 	Scheme      *runtime.Scheme
+	Recorder    record.EventRecorder // 增加Event
 	BackupImage string
 }
 
@@ -75,8 +79,10 @@ func (r *EtcdBackupReconciler) setStateActual(ctx context.Context, state *backup
 func (r *EtcdBackupReconciler) setStateDesired(ctx context.Context, state *backupState) error {
 	var desired backupStateContainer
 	// 根据EtcdBackup创建一个用于备份etcd的pod
-	pod := podForBackup(state.backup, r.BackupImage)
-
+	pod, err := podForBackup(state.backup, r.BackupImage)
+	if err != nil {
+		return err
+	}
 	// 配置 controller references
 	if err := controllerutil.SetControllerReference(state.backup, pod, r.Scheme); err != nil {
 		return fmt.Errorf("setting controller reference error: %s", err)
@@ -117,14 +123,25 @@ func (r EtcdBackupReconciler) getState(ctx context.Context, req ctrl.Request) (*
 	return &state, nil
 }
 
-func podForBackup(backup *etcdv1alpha1.EtcdBackup, image string) *corev1.Pod {
+func podForBackup(backup *etcdv1alpha1.EtcdBackup, image string) (*corev1.Pod, error) {
 	var secretRef *corev1.SecretEnvSource
 	var backupEndpoint, backupUrl string
 
-	// todo validate yaml
 	if backup.Spec.StorageType == etcdv1alpha1.BackupStorageTypeS3 {
+		// format: s3:{{ .Namespace }}/{{ .Name }}/{{ .CreationTimestamp }}/snapshot.db
+		// 备份的目标地址支持go-template
 		// s3://my-bucket/my-dir/my-object.db
-		backupUrl = fmt.Sprintf("%s://%s", backup.Spec.StorageType, backup.Spec.S3.Path)
+		tmpl, err := template.New("template").Parse(backup.Spec.S3.Path)
+		if err != nil {
+			return nil, err
+		}
+		// 解析成备份的地址
+		var objectURl strings.Builder
+		if err = tmpl.Execute(&objectURl, backup); err != nil { //将backup解析到objectURl
+			return nil, err
+		}
+
+		backupUrl = fmt.Sprintf("%s://%s", backup.Spec.StorageType, objectURl.String())
 		backupEndpoint = backup.Spec.S3.Endpoint
 		secretRef = &corev1.SecretEnvSource{
 			LocalObjectReference: corev1.LocalObjectReference{
@@ -179,7 +196,7 @@ func podForBackup(backup *etcdv1alpha1.EtcdBackup, image string) *corev1.Pod {
 			},
 			RestartPolicy: corev1.RestartPolicyNever,
 		},
-	}
+	}, nil
 }
 
 // +kubebuilder:rbac:groups=etcd.shimo.im,resources=etcdbackups,verbs=get;list;watch;create;update;patch;delete
@@ -220,16 +237,20 @@ func (r *EtcdBackupReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 	case state.actual.pod == nil: // 当前还没有执行任务的pod,创建pod
 		log.Info("Backup Pod does not exists. Createing...")
 		action = &CreateObejct{client: r.Client, obj: state.desired.pod}
+		r.Recorder.Event(state.backup, corev1.EventTypeNormal, EventReasonSuccessfulCreate, //添加创建成功event实践信息
+			fmt.Sprintf("Create Pod: %s", state.desired.pod))
 	case state.actual.pod.Status.Phase == corev1.PodFailed: //Pod执行失败
 		log.Info("Backup Pod failed")
 		newBackup := state.backup.DeepCopy()
 		newBackup.Status.Phase = etcdv1alpha1.EtcdBackupPhaseFailed // 更改备份失败
 		action = &PatchStatus{client: r.Client, original: state.backup, new: newBackup}
+		r.Recorder.Event(state.backup, corev1.EventTypeWarning, EventReasonBackupFailed, "Backup failed. See backup pod for detail information.")
 	case state.actual.pod.Status.Phase == corev1.PodSucceeded: // pod执行成功
 		log.Info("Backup Pod success.")
 		newBackup := state.backup.DeepCopy()
 		newBackup.Status.Phase = etcdv1alpha1.EtcdBackupPhaseCompleted // 更改成备份成功
 		action = &PatchStatus{client: r.Client, original: state.backup, new: newBackup}
+		r.Recorder.Event(state.backup, corev1.EventTypeNormal, EventReasonBackupSucceeded, "Backup completed successfully")
 	}
 
 	if action != nil {

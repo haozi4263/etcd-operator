@@ -7,7 +7,8 @@ spec:
   etcdUrl: http://etcd-cluster-0.etcd-cluster.default.svc.cluster.local:2379 # 备份节点到etcd地址
   storageType: s3 # 指定备份类型
   s3:
-    path: "etcdbackup/etcd-snapshot.db"  # 数据存放目录 格式：<bucket>/<object path>
+    # path模版化 my-bucket/{{ .Namespace }}/{{ .Name }}/{{ .CreationTimestamp }}/snapshot.db
+    path: "etcdbackup/{{ .Namespace }}/{{ .Name }}/{{ .UID }}/snapshot.db"  # 数据存放目录 格式：<bucket>/<object path>
     secret: "minio-access-secret"  # 包含secretID secretKey
     endpoint: "play.min.io"
   oss:
