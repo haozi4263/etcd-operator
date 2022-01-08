@@ -118,6 +118,28 @@ func (r EtcdBackupReconciler) getState(ctx context.Context, req ctrl.Request) (*
 }
 
 func podForBackup(backup *etcdv1alpha1.EtcdBackup, image string) *corev1.Pod {
+	var secretRef *corev1.SecretEnvSource
+	var backupEndpoint, backupUrl string
+
+	// todo validate yaml
+	if backup.Spec.StorageType == etcdv1alpha1.BackupStorageTypeS3 {
+		// s3://my-bucket/my-dir/my-object.db
+		backupUrl = fmt.Sprintf("%s://%s", backup.Spec.StorageType, backup.Spec.S3.Path)
+		backupEndpoint = backup.Spec.S3.Endpoint
+		secretRef = &corev1.SecretEnvSource{
+			LocalObjectReference: corev1.LocalObjectReference{
+				Name: backup.Spec.S3.Secret,
+			},
+		}
+	} else { // oss
+		backupUrl = fmt.Sprintf("%s://%s", backup.Spec.StorageType, backup.Spec.OSS.Path)
+		backupEndpoint = backup.Spec.OSS.Endpoint
+		secretRef = &corev1.SecretEnvSource{
+			LocalObjectReference: corev1.LocalObjectReference{
+				Name: backup.Spec.OSS.Secret,
+			},
+		}
+	}
 	return &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: backup.Namespace,
@@ -130,6 +152,18 @@ func podForBackup(backup *etcdv1alpha1.EtcdBackup, image string) *corev1.Pod {
 					Image: image,
 					Args: []string{
 						"--etcd-url", backup.Spec.EtcdUrl,
+						"--backup-url", backupUrl,
+					},
+					Env: []corev1.EnvVar{
+						{
+							Name:  backupEndpoint,
+							Value: backup.Spec.S3.Endpoint,
+						},
+					},
+					EnvFrom: []corev1.EnvFromSource{ // 从configmap或secret获取env
+						{
+							SecretRef: secretRef,
+						},
 					},
 					Resources: corev1.ResourceRequirements{
 						Requests: corev1.ResourceList{

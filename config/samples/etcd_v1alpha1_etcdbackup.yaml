@@ -7,8 +7,12 @@ spec:
   etcdUrl: http://etcd-cluster-0.etcd-cluster.default.svc.cluster.local:2379 # 备份节点到etcd地址
   storageType: s3 # 指定备份类型
   s3:
-    path: ""  # 数据存放目录
-    s3Secret: ""  # 包含secretID secretKey
+    path: "etcdbackup/etcd-snapshot.db"  # 数据存放目录 格式：<bucket>/<object path>
+    secret: "minio-access-secret"  # 包含secretID secretKey
+    endpoint: "https://play.min.io:9443"
   oss:
-    path: ""  # 数据存放目录
-    ossSecret: ""  # 包含secretID secretKey
+    path: "etcdbackup/etcd-snapshot.db"  # 数据存放目录 格式：<bucket>/<object path>
+    secret: ""  # 包含secretID secretKey
+    endpoint: "play.min.io"
+
+# kubectl create secret generic minio-access-secret --from-literal=MINIO_ACCESS_KEY=Q3AM3UQ867SPQQA43P2F --from-literal=MINIO_SECRET_KEY=zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG

@@ -42,23 +42,29 @@ spec:
               type: string
             oss:
               properties:
-                ossSecret:
+                endpoint:
                   type: string
                 path:
                   type: string
+                secret:
+                  type: string
               required:
-              - ossSecret
+              - endpoint
               - path
+              - secret
               type: object
             s3:
               properties:
+                endpoint:
+                  type: string
                 path:
                   type: string
-                s3Secret:
+                secret:
                   type: string
               required:
+              - endpoint
               - path
-              - s3Secret
+              - secret
               type: object
             storageType:
               type: string

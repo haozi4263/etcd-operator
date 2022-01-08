@@ -27,6 +27,9 @@ var (
 	EtcdBackupPhaseBakingUp  EtcdBackupPhase = "BackingUp"
 	EtcdBackupPhaseCompleted EtcdBackupPhase = "Completed"
 	EtcdBackupPhaseFailed    EtcdBackupPhase = "Failed"
+
+	BackupStorageTypeS3  BackupStorageType = "s3"
+	BackupStorageTypeOSS BackupStorageType = "oss"
 )
 
 type BackupStorageType string
@@ -40,22 +43,24 @@ type EtcdBackupSpec struct {
 	// Foo is an example field of EtcdBackup. Edit EtcdBackup_types.go to remove/update
 	EtcdUrl      string            `json:"etcdUrl"`
 	StorageType  BackupStorageType `json:"storageType"`
-	BackupSoucre `json:",inline"`
+	BackupSource `json:",inline"`
 }
 
-type BackupSoucre struct {
+type BackupSource struct {
 	S3  *S3BackupSource  `json:"s3,omitempty"`
 	OSS *OSSBackupSource `json:"oss,omitempty"`
 }
 
 type S3BackupSource struct {
 	Path     string `json:"path"`
-	S3Secret string `json:"s3Secret"` // 包含 ak sk
+	Secret   string `json:"secret"` // 包含 ak sk
+	Endpoint string `json:"endpoint"`
 }
 
 type OSSBackupSource struct {
-	Path      string `json:"path"`
-	OssSecret string `json:"ossSecret"` // 包含 ak sk
+	Path     string `json:"path"`
+	Secret   string `json:"secret"` // 包含 ak sk
+	Endpoint string `json:"endpoint"`
 }
 
 // EtcdBackupStatus defines the observed state of EtcdBackup

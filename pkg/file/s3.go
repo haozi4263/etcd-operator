@@ -28,15 +28,12 @@ func (s *s3Uploader) InitClient() (*minio.Client, error) {
 	})
 }
 
-func (s *s3Uploader) Uploader(ctx context.Context, filePath string) (int64, error) {
+func (s *s3Uploader) Uploader(ctx context.Context, bucketName, objectName, filePath string) (int64, error) {
 	minioClient, err := s.InitClient()
 	if err != nil {
 		return 0, err
 	}
 
-	// bucketname
-	bucketName := "etcdbackup"
-	objectName := "etcd-snapshot.db"
 	uploaderInfo, err := minioClient.FPutObject(ctx, bucketName, objectName, filePath, minio.PutObjectOptions{})
 	if err != nil {
 		return 0, err
