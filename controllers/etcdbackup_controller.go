@@ -201,7 +201,7 @@ func podForBackup(backup *etcdv1alpha1.EtcdBackup, image string) (*corev1.Pod, e
 
 // +kubebuilder:rbac:groups=etcd.shimo.im,resources=etcdbackups,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=etcd.shimo.im,resources=etcdbackups/status,verbs=get;update;patch
-
+// 生成rbac
 // +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core,resources=pods/status,verbs=get;update;patch
 
