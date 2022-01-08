@@ -10,12 +10,12 @@ backup:
 2. make install 安装crd集群中
 3. make run 本地调试运行controller
 4. 打包etcd-operator-cluster-backup controller
-    make docker-build IMG=haozi4263/etcd-operator-cluster:v1.2
-    make docker-push IMG=haozi4263/etcd-operator-cluster:v1.2
+    docker build --target manager -t haozi4263/etcd-operator-cluster:v1.3 .
+    docker push haozi4263/etcd-operator-cluster:v1.3
 5. 部署EtcdCluster
    kubectl apply -f config/samples/etcd_v1alpha1_etcdcluster.yaml
 8. 部署etcd-operator-cluster-backup controller到集群中
-   make deploy IMG=haozi4263/etcd-operator-cluster:v1.2
+   make deploy IMG=haozi4263/etcd-operator-cluster:v1.3
 9. 部署EtcdBackup
    kubectl apply -f config/samples/etcd_v1alpha1_etcdbackup.yaml
 
