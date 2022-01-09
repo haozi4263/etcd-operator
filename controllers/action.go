@@ -23,7 +23,7 @@ func (s *PatchStatus) Execute(ctx context.Context) error {
 	if reflect.DeepEqual(s.original, s.new) {
 		return nil
 	}
-	//跟新状态
+	// 更新状态
 	if err := s.client.Status().Patch(ctx, s.new, client.MergeFrom(s.original)); err != nil {
 		return fmt.Errorf("patching status error: %s", err)
 	}
@@ -31,12 +31,12 @@ func (s *PatchStatus) Execute(ctx context.Context) error {
 }
 
 // 创建一个新的资源对象
-type CreateObejct struct {
+type CreateObject struct {
 	client client.Client
 	obj    runtime.Object
 }
 
-func (o *CreateObejct) Execute(ctx context.Context) error {
+func (o *CreateObject) Execute(ctx context.Context) error {
 	if err := o.client.Create(ctx, o.obj); err != nil {
 		return fmt.Errorf("create object error: %s", err)
 	}

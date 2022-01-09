@@ -236,7 +236,7 @@ func (r *EtcdBackupReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 		log.Info("Backup has completed, Ingoring...")
 	case state.actual.pod == nil: // 当前还没有执行任务的pod,创建pod
 		log.Info("Backup Pod does not exists. Createing...")
-		action = &CreateObejct{client: r.Client, obj: state.desired.pod}
+		action = &CreateObject{client: r.Client, obj: state.desired.pod}
 		r.Recorder.Event(state.backup, corev1.EventTypeNormal, EventReasonSuccessfulCreate, //添加创建成功event实践信息
 			fmt.Sprintf("Create Pod: %s", state.desired.pod))
 	case state.actual.pod.Status.Phase == corev1.PodFailed: //Pod执行失败
